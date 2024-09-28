@@ -1,40 +1,87 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
-import { AntDesign, Feather, FontAwesome6, Fontisto, Ionicons } from '@expo/vector-icons';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
-
+import Toast from 'react-native-toast-message';
 
 const EmailVerification = () => {
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const otpInputs = useRef<TextInput[]>([]);
+
+  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < otpInputs.current.length - 1) {
+      otpInputs.current[index + 1]?.focus();
+    }
+
+    if (text.length === 0 && index > 0) {
+      otpInputs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerify = () => {
+    if (otp.some(input => input === '')) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid OTP',
+        text2: 'Please enter all 4 digits of the OTP code.',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    // Add logic here to verify OTP with the server or backend
+
+    Toast.show({
+      type: 'success',
+      text1: 'OTP Verified',
+      text2: 'You have successfully verified your OTP!',
+      position: 'bottom',
+    });
+
+    // Proceed to next screen or logic
+    router.push('./nextScreen');  // Replace with the next screen's path
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.header} onPress={() => router.back()}>
-          <AntDesign name='left' size={25} />
+        <AntDesign name='left' size={25} />
       </TouchableOpacity>
+
       {/* Title */}
       <Text style={styles.title}>Enter Verification Code</Text>
-      <Text style={styles.subtitle}>
-        We have sent code to your number 0808 888 6823
-      </Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
-        />
-      </View>
-      <Text style={styles.duration}>Resend it <Text style={styles.durationTime}>00:30s</Text></Text>
+      <Text style={styles.subtitle}>We have sent code to your number 0808 888 6823</Text>
 
-      {/* Continue Button */}
-      <TouchableOpacity style={styles.continueButton}>
-        <Text style={styles.continueButtonText}>Continue</Text>
+      {/* OTP Input */}
+      <View style={styles.inputContainer}>
+        {otp.map((value, index) => (
+          <TextInput
+            key={index}
+            ref={(ref) => otpInputs.current[index] = ref as TextInput}
+            style={styles.input}
+            maxLength={1}
+            keyboardType="number-pad"
+            value={value}
+            onChangeText={(text) => handleOtpChange(text, index)}
+          />
+        ))}
+      </View>
+
+      <Text style={styles.duration}>
+        Resend it <Text style={styles.durationTime}>00:30s</Text>
+      </Text>
+
+      {/* Verify Button */}
+      <TouchableOpacity style={styles.continueButton} onPress={handleVerify}>
+        <Text style={styles.continueButtonText}>Verify</Text>
       </TouchableOpacity>
+
+      {/* Toast Container */}
+      <Toast />
     </View>
   );
 };
@@ -56,30 +103,26 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     lineHeight: 20,
   },
-  interestContainer: {
+  inputContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginVertical: 30,
-    gap: 10
+    justifyContent: 'space-between',
+    marginVertical: 20,
   },
-  interestButton: {
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  input: {
+    width: 50,
+    height: 50,
     borderWidth: 1,
-    borderColor: '#EEE',
-    marginBottom: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5
+    borderColor: '#ccc',
+    borderRadius: 10,
+    textAlign: 'center',
+    fontSize: 18,
   },
-  selected: {
-    backgroundColor: '#E03368',
-    borderColor: '#FF6A9F',
+  duration: {
+    flexDirection: 'row',
   },
-  interestText: {
-    color: '#666',
+  durationTime: {
+    color: '#E03368',
+    fontWeight: '600',
   },
   continueButton: {
     backgroundColor: '#E03368',
@@ -93,47 +136,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  selectedText:{
-    color: "#fff"
+  header: {
+    marginTop: 40,
   },
-  header:{
-    marginTop: 40
-  },
-  inputContainer:{
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 20,
-    justifyContent: "space-between"
-  },
-  flagDropdown:{
-    flexDirection: "row",
-    alignItems: "center",
-    borderRightWidth: 1,
-    borderRightColor: "#E03368",
-    padding: 10
-  },
-  input:{
-    padding: 10,
-    flex: 1,
-    fontWeight: "600",
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 20,
-    marginRight: 20,
-    borderRadius: 15
-  },
-  icon:{
-    width: 30,
-    height: 30,
-  },
-  duration:{
-    flexDirection: "row"
-  },
-  durationTime:{
-    
-  }
 });
 
 export default EmailVerification;
