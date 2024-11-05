@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react'; 
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Swiper from 'react-native-swiper';
 import { useRouter } from 'expo-router';
@@ -6,8 +6,22 @@ import { useRouter } from 'expo-router';
 const Onboarding = () => {
   const router = useRouter();
 
+  // Type the swiperRef correctly
+  const swiperRef = useRef<Swiper>(null); // Provide type Swiper for the ref
+
+  const handleNext = (index: number) => {
+    if (swiperRef.current) {
+      if (index < 2) {
+        swiperRef.current.scrollBy(1); // Scroll to the next slide
+      } else {
+        router.push('/Login'); // Navigate to login screen after the last slide
+      }
+    }
+  };
+
   return (
     <Swiper
+      ref={swiperRef} // Attach the reference to the swiper
       loop={false}
       activeDotColor="#E03368"
       dotColor="#ccc"
@@ -29,7 +43,7 @@ const Onboarding = () => {
         </View>
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => router.push('/Login')}
+          onPress={() => handleNext(0)} // Scroll to the next slide
         >
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
@@ -48,10 +62,9 @@ const Onboarding = () => {
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </Text>
         </View>
-
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => router.push('/Login')}
+          onPress={() => handleNext(1)} // Scroll to the next slide
         >
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
@@ -70,10 +83,9 @@ const Onboarding = () => {
             Sit aliqua dolor do amet sint. Let's begin your journey with us.
           </Text>
         </View>
-        {/* Final Button */}
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => router.push('/Login')}
+          onPress={() => handleNext(2)} // Navigate to Login screen
         >
           <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>
@@ -120,7 +132,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
     alignItems: 'center',
-    width: '90%'
+    width: '90%',
   },
   buttonText: {
     color: '#FFF',

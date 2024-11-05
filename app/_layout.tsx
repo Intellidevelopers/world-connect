@@ -35,7 +35,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
-      router.replace('/EmailVerification')
+      router.replace('/(tabs)')
     }
   }, [loaded]);
 
@@ -59,6 +59,9 @@ function RootLayoutNav() {
         <Stack.Screen name="SelectInterestScreen" options={{ headerShown: false }} />
         <Stack.Screen name="EmailRegistration" options={{ headerShown: false }} />
         <Stack.Screen name="EmailVerification" options={{ headerShown: false }} />
+        <Stack.Screen name="AddProfile" options={{ headerShown: false }} />
+        <Stack.Screen name="SelectGender" options={{ headerShown: false }} />
+        <Stack.Screen name="IdealMatch" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

@@ -43,7 +43,7 @@ const EmailVerification = () => {
     });
 
     // Proceed to next screen or logic
-    router.push('./nextScreen');  // Replace with the next screen's path
+    router.push('/AddProfile');  // Replace with the next screen's path
   };
 
   return (
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   input: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,

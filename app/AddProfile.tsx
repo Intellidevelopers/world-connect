@@ -1,40 +1,161 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
-import { AntDesign, Feather, FontAwesome6, Fontisto, Ionicons } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
-
+import DateTimePickerModal from 'react-native-modal-datetime-picker';  // Import DateTimePicker
 
 const AddProfile = () => {
+  const [image, setImage] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [dob, setDob] = useState('');
+  const [address, setAddress] = useState('');
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);  // Date Picker visibility state
+
+  const showToast = (type: 'success' | 'error', message: string) => {
+    Toast.show({
+      type: type,
+      text1: message,
+      position: 'top',
+      visibilityTime: 3000,
+    });
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showToast('error', 'Permission to access gallery denied.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const handleContinue = () => {
+    if (!name || !email || !mobile || !dob || !address) {
+      showToast('error', 'Please fill out all fields.');
+      return;
+    }
+    showToast('success', 'Profile details submitted successfully!');
+    // Continue to the next step
+    router.push('/SelectGender')
+  };
+
+  // Show the date picker
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  // Hide the date picker
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  // Handle date confirmation
+  const handleConfirm = (date: Date) => {
+    const formattedDate = date.toISOString().split('T')[0];  // Format date (YYYY-MM-DD)
+    setDob(formattedDate);
+    hideDatePicker();
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.header} onPress={() => router.back()}>
-          <AntDesign name='left' size={25} />
+        <AntDesign name="left" size={25} />
       </TouchableOpacity>
-      {/* Title */}
-      <Text style={styles.title}>Enter Verification Code</Text>
-      <Text style={styles.subtitle}>
-        We have sent code to your number 0808 888 6823
-      </Text>
+
+      <Text style={styles.title}>Add Profile Details</Text>
+      <Text style={styles.subtitle}>Please add your profile details here</Text>
+
+      <View style={styles.profileContainer}>
+        <TouchableOpacity onPress={pickImage} style={styles.profileImageButton}>
+          {image ? (
+            <Image source={{ uri: image }} style={styles.profileImage} />
+          ) : (
+            <Image source={require('../assets/images/user3.png')} style={styles.profileImage} />
+          )}
+          <View style={styles.editIconContainer}>
+            <Feather name="edit" size={20} color="#fff" />
+          </View>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.inputContainer}>
         <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
-        />
-         <TextInput
-            style={styles.input}
+          style={styles.input}
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
         />
       </View>
-      <Text style={styles.duration}>Resend it <Text style={styles.durationTime}>00:30s</Text></Text>
 
-      {/* Continue Button */}
-      <TouchableOpacity style={styles.continueButton}>
-        <Text style={styles.continueButtonText}>Verify</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email Address"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Mobile Number"
+          value={mobile}
+          onChangeText={setMobile}
+          keyboardType="phone-pad"
+        />
+      </View>
+
+      {/* Date of Birth Input with Calendar Picker */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Date of Birth"
+          value={dob}
+          onChangeText={setDob}
+          editable={false}  // Disable manual editing for DOB input
+        />
+        <TouchableOpacity onPress={showDatePicker}>
+          <FontAwesome name="calendar" size={20} color="#999" style={styles.calendarIcon} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Address"
+          value={address}
+          onChangeText={setAddress}
+        />
+      </View>
+
+      <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
+
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}    // Date Picker Visibility
+        mode="date"                        // Show date picker
+        onConfirm={handleConfirm}          // When a date is selected
+        onCancel={hideDatePicker}          // When the picker is cancelled
+      />
+
+      <Toast />
     </View>
   );
 };
@@ -44,6 +165,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: '#FFF',
+    padding: 10,
+  },
+  header: {
+    marginTop: 40,
   },
   title: {
     fontSize: 24,
@@ -56,30 +181,44 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     lineHeight: 20,
   },
-  interestContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginVertical: 30,
-    gap: 10
+  profileContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
   },
-  interestButton: {
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: '#EEE',
-    marginBottom: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5
+  profileImageButton: {
+    position: 'relative',
   },
-  selected: {
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#E03368',
+  },
+  editIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
     backgroundColor: '#E03368',
-    borderColor: '#FF6A9F',
+    borderRadius: 20,
+    padding: 5,
   },
-  interestText: {
-    color: '#666',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
+  calendarIcon: {
+    marginLeft: 10,
   },
   continueButton: {
     backgroundColor: '#E03368',
@@ -93,48 +232,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  selectedText:{
-    color: "#fff"
-  },
-  header:{
-    marginTop: 40
-  },
-  inputContainer:{
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 10,
-    marginBottom: 20,
-    justifyContent: "space-between"
-  },
-  flagDropdown:{
-    flexDirection: "row",
-    alignItems: "center",
-    borderRightWidth: 1,
-    borderRightColor: "#E03368",
-    padding: 10
-  },
-  input:{
-    padding: 10,
-    flex: 1,
-    fontWeight: "600",
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 20,
-    marginRight: 20,
-    borderRadius: 15
-  },
-  icon:{
-    width: 30,
-    height: 30,
-  },
-  duration:{
-    flexDirection: "row"
-  },
-  durationTime:{
-    color: "#E03368",
-    fontWeight: "600"
-  }
 });
 
 export default AddProfile;
